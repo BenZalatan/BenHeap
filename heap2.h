@@ -36,6 +36,9 @@ PACK(struct heap_t
 void printbin(char num)
 {
 	char i;
+
+	/* a lot of things in this file aren't optimized properly... */
+
 	for (i = 0; i < 8; i++)
 	{
 		if (num & (1 << (7 - i))) printf("1");
@@ -135,8 +138,10 @@ static inline HEAP_TYPE *heap_header_get_real(struct heap_t *heap, char *pos, ch
 {
 	return (HEAP_TYPE *)
 		(
-		(char *)heap->data_start + ((pos - heap->header_start) * 8 * HEAP_ALIGN) + bit_offset
-			);
+			(char *)heap->data_start +
+			((pos - heap->header_start) * 8 * HEAP_ALIGN) +
+			bit_offset
+		);
 }
 /* convert a data location to a header location */
 static inline char *heap_real_get_header(struct heap_t *heap, HEAP_TYPE *pos, char* OUT_bit_offset)
@@ -182,7 +187,7 @@ void *heap_malloc(struct heap_t *heap, long size)
 
 			if (amt >= size)
 			{
-				if (!spos) return NULL;
+				if (!spos) return NULL; /* how? */
 
 				for (si = 0; si <= pos - spos; si++)
 				{
@@ -215,7 +220,7 @@ void heap_mfree(struct heap_t *heap, void *ptr, long size)
 
 	while (head < heap->data_start)
 	{
-		for (i = (head == (char)ptr ? out : 0); i < 8; i++)
+		for (i = (head == (char*)ptr ? out : 0); i < 8; i++)
 		{
 			*(head) ^= 1 << (7 - i);
 			size -= HEAP_ALIGN;

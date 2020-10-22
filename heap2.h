@@ -1,11 +1,5 @@
 #pragma once
 
-/*
-
-This is hacky as hell, but it passes my tests....?
-
-*/
-
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -38,6 +32,7 @@ PACK(struct heap_t
 
 });
 
+/* print a char in binary */
 void printbin(char num)
 {
 	char i;
@@ -48,6 +43,7 @@ void printbin(char num)
 	}
 }
 
+/* print debug info about a heap object */
 void heap_debug(struct heap_t *heap)
 {
 	long i;
@@ -124,6 +120,7 @@ struct heap_t *heap_make(long size)
 	return output;
 }
 
+/* free a heap object */
 void heap_delete(struct heap_t *heap)
 {
 	/* if this was in the context of a kernel, I would use "alloc = HEAP_UNALLOC", but since we have malloc() and free() available... */
@@ -133,6 +130,7 @@ void heap_delete(struct heap_t *heap)
 	free(heap);
 }
 
+/* convert a header location to a data location */
 static inline HEAP_TYPE *heap_header_get_real(struct heap_t *heap, char *pos, char bit_offset)
 {
 	return (HEAP_TYPE *)
@@ -140,12 +138,14 @@ static inline HEAP_TYPE *heap_header_get_real(struct heap_t *heap, char *pos, ch
 		(char *)heap->data_start + ((pos - heap->header_start) * 8 * HEAP_ALIGN) + bit_offset
 			);
 }
+/* convert a data location to a header location */
 static inline char *heap_real_get_header(struct heap_t *heap, HEAP_TYPE *pos, char* OUT_bit_offset)
 {
 	*OUT_bit_offset = (((char *)pos - (char*)heap->data_start) / HEAP_ALIGN) % 8;
 	return heap->header_start + (((char *)pos - (char *)heap->data_start) / HEAP_ALIGN) / 8;
 }
 
+/* allocate memory in a heap */
 void *heap_malloc(struct heap_t *heap, long size)
 {
 	char *pos;
@@ -202,6 +202,7 @@ void *heap_malloc(struct heap_t *heap, long size)
 	return NULL;
 }
 
+/* free memory in a heap */
 void heap_mfree(struct heap_t *heap, void *ptr, long size)
 {
 	/* yes, I know it sucks to keep track of the size of allocations, whoops... I can improve the system a bit... */
